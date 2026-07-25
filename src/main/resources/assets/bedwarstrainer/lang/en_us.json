@@ -1,0 +1,8 @@
+{
+  "generator.bedwarstrainer.trainer_lobby": "Bedwars Trainer",
+  "bedwarstrainer.module.bridging": "Bridging",
+  "bedwarstrainer.module.pvp": "PvP Arena",
+  "bedwarstrainer.module.resources": "Resource Management",
+  "bedwarstrainer.lobby.welcome": "Welcome to the Bedwars training lobby! Right-click an NPC to start.",
+  "bedwarstrainer.pvp.start": "PvP started"
+}

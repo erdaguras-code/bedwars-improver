@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "bedwarstrainer",
+  "version": "${version}",
+  "name": "Bedwars Trainer",
+  "description": "Bedwars becerileri (bridging, PvP, kaynak yonetimi) icin antrenman dunyasi.",
+  "authors": ["uras"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.bedwarstrainer.BedwarsTrainerMod"]
+  },
+  "mixins": [
+    "bedwarstrainer.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
