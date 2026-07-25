@@ -27,11 +27,16 @@ jobs:
       - name: Build
         run: gradle --no-daemon build
 
+      # Sadece kurulmaya hazir jar yuklensin; -sources ve -dev jar'lari
+      # mods klasorune atilinca "mixin not found" hatasi veriyor.
       - name: Derlenen jar'i yukle
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: bedwars-trainer-jar
-          path: build/libs/*.jar
+          path: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+            !build/libs/*-dev.jar
 
       # Derleme hatasi olursa log zaten Actions ciktisinda gorunur.
