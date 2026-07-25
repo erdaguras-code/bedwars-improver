@@ -18,23 +18,14 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      # Runner'daki Gradle 9.x, Fabric Loom 1.7 ile uyumsuz. Wrapper'i bos bir
-      # dizinde uretiyoruz ki bu projenin build script'i o Gradle ile hic
-      # calistirilmasin; derleme wrapper'daki 8.10 ile yapilir.
-      - name: Gradle wrapper olustur (yoksa)
-        run: |
-          if [ ! -f gradlew ]; then
-            mkdir -p "$RUNNER_TEMP/wrapper-gen"
-            (cd "$RUNNER_TEMP/wrapper-gen" && gradle wrapper --gradle-version 8.10)
-            cp "$RUNNER_TEMP/wrapper-gen/gradlew" .
-            cp "$RUNNER_TEMP/wrapper-gen/gradlew.bat" .
-            mkdir -p gradle/wrapper
-            cp "$RUNNER_TEMP/wrapper-gen/gradle/wrapper/gradle-wrapper.jar" gradle/wrapper/
-            chmod +x gradlew
-          fi
+      # Runner'a on kurulu Gradle 9.x, Fabric Loom 1.7 ile uyumsuz.
+      - name: Gradle 8.10 kur
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10'
 
       - name: Build
-        run: ./gradlew --no-daemon build
+        run: gradle --no-daemon build
 
       - name: Derlenen jar'i yukle
         if: success()
