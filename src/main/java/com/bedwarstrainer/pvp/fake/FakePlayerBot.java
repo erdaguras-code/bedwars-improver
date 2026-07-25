@@ -36,15 +36,14 @@ public final class FakePlayerBot {
                                            String name) {
         GameProfile profile = new GameProfile(Uuids.getOfflinePlayerUuid(name), name);
 
-        // SyncedClientOptions = istemci ayarlari (skin katmanlari vb.) - varsayilan
-        net.minecraft.client.option.SyncedClientOptions options =
-                net.minecraft.client.option.SyncedClientOptions.createDefault();
+        // Varsayilan istemci ayarlarini (skin katmanlari vb.) buradan aliyoruz;
+        // boylece SyncedClientOptions sinifini adiyla anmamiza gerek kalmiyor.
+        ConnectedClientData clientData = ConnectedClientData.createDefault(profile, false);
 
-        ServerPlayerEntity bot = new ServerPlayerEntity(server, world, profile, options);
+        ServerPlayerEntity bot = new ServerPlayerEntity(server, world, profile, clientData.syncedOptions());
 
         FakeClientConnection connection = new FakeClientConnection(NetworkSide.SERVERBOUND);
-        server.getPlayerManager().onPlayerConnect(connection, bot,
-                new ConnectedClientData(profile, 0, options, false));
+        server.getPlayerManager().onPlayerConnect(connection, bot, clientData);
 
         bot.networkHandler.requestTeleport(x, y, z, yaw, 0.0f);
         bot.setHealth(20.0f);
