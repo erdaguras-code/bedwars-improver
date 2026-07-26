@@ -24,6 +24,13 @@ public final class LobbyBuilder {
     /** "Lobi kuruldu mu?" isaretcisi: origin'in 2 alti bir beacon. */
     private static final BlockPos BUILT_MARKER = new BlockPos(0, 97, 0);
 
+    // ---- Bridging arenasi geometrisi ----
+    // BridgingModule bu sabitleri kullanir; insa ile olcum boylece hic kaymaz.
+    /** Baslangic ve hedef platformlarinin yaricapi (3 -> 7x7 platform). */
+    public static final int BRIDGE_PLATFORM_RADIUS = 3;
+    /** Iki platform arasindaki mesafe (+Z yonunde). */
+    public static final int BRIDGE_GAP = 25;
+
     /** Zemin void mu (yani bizim antrenman dunyamiz mi)? Spawn cevresine bakar. */
     public static boolean looksLikeTrainerWorld(ServerWorld world) {
         BlockPos spawn = world.getSpawnPos();
@@ -80,8 +87,8 @@ public final class LobbyBuilder {
         BlockPos base = module.arenaSpawn.down(); // zemin blogu
         if (module == TrainingModule.BRIDGING) {
             // Basit bridging: baslangic platformu, bosluk, hedef platform
-            fillFloor(world, base, 3, Blocks.SMOOTH_STONE);            // baslangic
-            fillFloor(world, base.add(0, 0, 25), 3, Blocks.EMERALD_BLOCK); // hedef (25 blok ileride)
+            fillFloor(world, base, BRIDGE_PLATFORM_RADIUS, Blocks.SMOOTH_STONE);
+            fillFloor(world, base.add(0, 0, BRIDGE_GAP), BRIDGE_PLATFORM_RADIUS, Blocks.EMERALD_BLOCK);
         } else if (module == TrainingModule.PVP) {
             fillFloor(world, base, 12, Blocks.RED_SANDSTONE);          // 25x25 arena
             drawBorder(world, base, 12, Blocks.SMOOTH_RED_SANDSTONE);

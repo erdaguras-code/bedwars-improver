@@ -1,5 +1,6 @@
 package com.bedwarstrainer;
 
+import com.bedwarstrainer.bridging.BridgingModule;
 import com.bedwarstrainer.command.TrainerCommands;
 import com.bedwarstrainer.event.InteractionHandler;
 import com.bedwarstrainer.lobby.LobbyBuilder;
@@ -38,6 +39,9 @@ public class BedwarsTrainerMod implements ModInitializer {
 
         // NPC'lere tiklama olaylarini dinle
         InteractionHandler.register();
+
+        // Kopru atma antrenmani (Modul 1)
+        BridgingModule.register();
 
         // PvP bot oturum yoneticisi (Modul 2)
         PvpManager.init();
