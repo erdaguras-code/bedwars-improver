@@ -10,14 +10,19 @@ import java.util.UUID;
 
 /**
  * Sahte oyuncu botunu her tick suren taktiksel 1.8 PvP beyni.
- *  - Sprint atarak hedefe yaklasir (sprint = 1.8 knockback bonusu)
- *  - Menzile girince spam vurur (cooldown mixin sayesinde tam hasar)
- *  - Yakinda strafe atar (yan yan hareket) - insan gibi, bodoslama degil
- *  - Vurustan hemen once sprint-reset (W-tap) yapar -> ekstra knockback
  *
- * ⚠️ CI/PLAYTEST: hareket fizigi (move + gravity + jump) elle surulur;
- *   deger/akis oynatarak ince ayar gerekir. Netcode derlenince test edip
- *   birlikte tunelariz.
+ * Davranis katmanlari (seviye yukseldikce acilir):
+ *  - Sprint ile yaklasma (sprint = 1.8 knockback bonusu)
+ *  - Mesafe yonetimi: cok yaklasinca geri cekilir, uzaksa kapatir
+ *  - Strafe (yan yan hareket) - bodoslama gitmez
+ *  - W-tap / sprint-reset: vurustan hemen once sprint kes-ac -> ekstra knockback
+ *  - Vur-kac: vurduktan sonra birkac tick geri ceker (sprint resetler, misilleme yer)
+ *  - Zipla-kritik: sprint birakip ziplar, DUSERKEN vurur -> kritik hasar
+ *    (vanilla kurali: sprint aciksa kritik olmaz, o yuzden once sprint kapanir)
+ *  - Dusuk seviyede nisan titremesi - insan gibi, robot gibi degil
+ *
+ * ⚠️ PLAYTEST: hareket fizigi (move + gravity + jump) elle surulur; sayilar
+ *   oyun icinde denenerek ayarlanmali.
  */
 public class BotController {
     private final ServerPlayerEntity bot;
@@ -30,7 +35,14 @@ public class BotController {
     private int strafeSwitchTick;
     private double motionY;
 
+    /** Vurduktan sonra geri cekilme sayaci. */
+    private int backpedalTick;
+    /** Zipla-kritik icin: ziplandi, dususe gecince vur. */
+    private int critPending;
+
     private static final double REACH = 3.0;
+    /** Bu mesafeden yakinsa bot geri ceker (dip dibe girip sikismaz). */
+    private static final double TOO_CLOSE = 1.6;
 
     public BotController(ServerPlayerEntity bot, BotLevel level, UUID ownerUuid) {
         this.bot = bot;
@@ -69,23 +81,18 @@ public class BotController {
             return;
         }
 
-        // Hedefe bak
         faceTarget(target);
 
-        double distSq = bot.squaredDistanceTo(target);
+        double dist = Math.sqrt(bot.squaredDistanceTo(target));
         Vec3d toTarget = target.getPos().subtract(bot.getPos());
         Vec3d dir = new Vec3d(toTarget.x, 0, toTarget.z);
         double horiz = Math.sqrt(dir.x * dir.x + dir.z * dir.z);
         if (horiz > 1.0e-4) dir = dir.multiply(1.0 / horiz);
 
-        // Sprint (1.8 knockback bonusu icin kritik)
-        bot.setSprinting(true);
+        Vec3d move = decideMovement(dir, dist);
 
-        // Hareket vektoru: hedefe dogru
-        Vec3d move = dir.multiply(level.moveSpeed);
-
-        // Yakinda strafe: bodoslama yerine yan yan
-        if (level.strafe && distSq < 16.0) {
+        // Strafe: yakin mesafede yan yan sal
+        if (level.strafe && dist < 4.0 && backpedalTick <= 0) {
             if (--strafeSwitchTick <= 0) {
                 strafeSwitchTick = 15 + bot.getRandom().nextInt(20);
                 strafeDir = -strafeDir;
@@ -95,19 +102,72 @@ public class BotController {
         }
 
         applyMovement(move);
+        handleAttack(target, dist);
+    }
 
-        // Menzildeyse vur
-        if (distSq <= REACH * REACH) {
-            if (--attackTick <= 0) {
-                attackTick = level.attackIntervalTicks;
-                // W-tap / sprint-reset: sprint'i kapat-ac -> ekstra knockback
-                if (level.wTap) {
-                    bot.setSprinting(false);
-                    bot.setSprinting(true);
-                }
-                bot.attack(target); // GERCEK oyuncu saldirisi -> otantik 1.8 KB
-                bot.swingHand(bot.getActiveHand());
+    /** Mesafeye gore yaklas / tut / geri cek. */
+    private Vec3d decideMovement(Vec3d dir, double dist) {
+        if (backpedalTick > 0) {
+            backpedalTick--;
+            bot.setSprinting(false); // geri cekilirken sprint resetlenir
+            return dir.multiply(-level.moveSpeed * 0.8);
+        }
+
+        if (critPending > 0) {
+            // Kritik icin havadayken sprint kapali kalmali
+            bot.setSprinting(false);
+            return dir.multiply(level.moveSpeed * 0.5);
+        }
+
+        if (dist < TOO_CLOSE) {
+            bot.setSprinting(false);
+            return dir.multiply(-level.moveSpeed * 0.5);
+        }
+
+        bot.setSprinting(true);
+        if (dist > REACH * 0.9) {
+            return dir.multiply(level.moveSpeed);          // mesafeyi kapat
+        }
+        return dir.multiply(level.moveSpeed * 0.35);       // menzilde tut
+    }
+
+    private void handleAttack(PlayerEntity target, double dist) {
+        // Zipla-kritik bekliyorsa: dususe gecince vur
+        if (critPending > 0) {
+            critPending--;
+            if (motionY < 0.0 && dist <= REACH) {
+                strike(target);
+                critPending = 0;
             }
+            return;
+        }
+
+        if (dist > REACH || --attackTick > 0) return;
+
+        attackTick = level.attackIntervalTicks;
+
+        // Seviye 6+: bazen zipla-kritik dene
+        if (level.level >= 6 && bot.isOnGround() && bot.getRandom().nextFloat() < 0.35f) {
+            bot.setSprinting(false);   // sprint acikken kritik olmaz
+            motionY = 0.42;            // zipla
+            critPending = 6;           // birkac tick icinde dususte vur
+            return;
+        }
+
+        if (level.wTap) {
+            // W-tap / sprint-reset: sprint'i kapat-ac -> ekstra knockback
+            bot.setSprinting(false);
+            bot.setSprinting(true);
+        }
+        strike(target);
+    }
+
+    private void strike(PlayerEntity target) {
+        bot.attack(target);
+        bot.swingHand(bot.getActiveHand());
+        // Vur-kac: vurduktan sonra kisa geri cekilme (sprint resetler, karsi vurustan kacar)
+        if (level.level >= 4) {
+            backpedalTick = 4;
         }
     }
 
@@ -115,6 +175,14 @@ public class BotController {
         Vec3d d = target.getEyePos().subtract(bot.getEyePos());
         double yaw = Math.toDegrees(Math.atan2(-d.x, d.z));
         double pitch = Math.toDegrees(-Math.atan2(d.y, Math.sqrt(d.x * d.x + d.z * d.z)));
+
+        // Dusuk seviyede nisan tam isabetli olmasin - insan gibi dursun
+        if (level.level < 4) {
+            double jitter = (4 - level.level) * 1.5;
+            yaw += (bot.getRandom().nextDouble() - 0.5) * jitter;
+            pitch += (bot.getRandom().nextDouble() - 0.5) * jitter * 0.5;
+        }
+
         bot.setYaw((float) yaw);
         bot.setHeadYaw((float) yaw);
         bot.setPitch((float) pitch);
@@ -122,7 +190,7 @@ public class BotController {
 
     private void applyMovement(Vec3d horizontalMove) {
         // basit yercekimi
-        if (bot.isOnGround()) {
+        if (bot.isOnGround() && motionY <= 0.0) {
             motionY = 0;
             // engel varsa zipla
             if (bot.horizontalCollision) motionY = 0.42;

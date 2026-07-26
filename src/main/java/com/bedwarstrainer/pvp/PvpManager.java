@@ -113,6 +113,34 @@ public final class PvpManager {
         player.extinguish();
     }
 
+    /**
+     * Botun kilici ve zirhi seviyeyle guclenir. Bot da senin gibi ekipmanli
+     * dovussun ki knockback ve hasar hesabi gercekci olsun.
+     */
+    private static void equipBot(ServerPlayerEntity bot, BotLevel level) {
+        bot.equipStack(EquipmentSlot.MAINHAND, new ItemStack(
+                level.level >= 6 ? Items.DIAMOND_SWORD
+                        : level.level >= 3 ? Items.IRON_SWORD
+                        : Items.STONE_SWORD));
+
+        if (level.level >= 6) {
+            bot.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+            bot.equipStack(EquipmentSlot.CHEST, new ItemStack(Items.IRON_CHESTPLATE));
+            bot.equipStack(EquipmentSlot.LEGS, new ItemStack(Items.IRON_LEGGINGS));
+            bot.equipStack(EquipmentSlot.FEET, new ItemStack(Items.IRON_BOOTS));
+        } else if (level.level >= 4) {
+            bot.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.CHAINMAIL_HELMET));
+            bot.equipStack(EquipmentSlot.CHEST, new ItemStack(Items.CHAINMAIL_CHESTPLATE));
+            bot.equipStack(EquipmentSlot.LEGS, new ItemStack(Items.CHAINMAIL_LEGGINGS));
+            bot.equipStack(EquipmentSlot.FEET, new ItemStack(Items.CHAINMAIL_BOOTS));
+        } else if (level.level >= 2) {
+            bot.equipStack(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+            bot.equipStack(EquipmentSlot.CHEST, new ItemStack(Items.LEATHER_CHESTPLATE));
+            bot.equipStack(EquipmentSlot.LEGS, new ItemStack(Items.LEATHER_LEGGINGS));
+            bot.equipStack(EquipmentSlot.FEET, new ItemStack(Items.LEATHER_BOOTS));
+        }
+    }
+
     private static void spawnFor(ServerPlayerEntity player, Session s) {
         ServerWorld world = player.getServerWorld();
         BlockPos arena = TrainingModule.PVP.arenaSpawn;
@@ -122,7 +150,9 @@ public final class PvpManager {
                     world.getServer(), world,
                     p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0.0f,
                     "TrainerBot_Lv" + s.level);
-            s.controller = new BotController(bot, new BotLevel(s.level), player.getUuid());
+            BotLevel botLevel = new BotLevel(s.level);
+            equipBot(bot, botLevel);
+            s.controller = new BotController(bot, botLevel, player.getUuid());
         } catch (Throwable t) {
             // Sahte oyuncu olusturmak surume duyarli bir is; sessizce yutma,
             // hatayi hem log'a hem oyuncunun ekranina yaz.

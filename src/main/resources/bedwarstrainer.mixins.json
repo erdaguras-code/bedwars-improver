@@ -5,7 +5,8 @@
   "mixins": [
     "ClientConnectionAccessor",
     "LivingEntityKnockbackMixin",
-    "PlayerAttackCooldownMixin"
+    "PlayerAttackCooldownMixin",
+    "PlayerSweepAttackMixin"
   ],
   "client": [],
   "injectors": {
