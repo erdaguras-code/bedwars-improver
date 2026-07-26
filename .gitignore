@@ -4,3 +4,6 @@ run/
 *.iml
 .idea/
 .DS_Store
+
+# Gradle wrapper jar repoda tutulmali (yukaridaki *.jar kuralindan muaf)
+!gradle/wrapper/gradle-wrapper.jar

@@ -18,14 +18,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      # Runner'a on kurulu Gradle 9.x, Fabric Loom 1.7 ile uyumsuz.
-      - name: Gradle 8.10 kur
+      # Runner'a on kurulu Gradle 9.x, Fabric Loom 1.7 ile uyumsuz; wrapper
+      # surumu 8.10'a sabitliyor. Yerelde de ayni komut calisir: ./gradlew build
+      - name: Gradle kurulumu (wrapper 8.10)
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10'
 
       - name: Build
-        run: gradle --no-daemon build
+        run: ./gradlew --no-daemon build
 
       # Sadece kurulmaya hazir jar yuklensin; -sources ve -dev jar'lari
       # mods klasorune atilinca "mixin not found" hatasi veriyor.
