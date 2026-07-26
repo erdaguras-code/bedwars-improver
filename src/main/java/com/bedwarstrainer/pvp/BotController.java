@@ -2,8 +2,11 @@ package com.bedwarstrainer.pvp;
 
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.UUID;
 
 /**
  * Sahte oyuncu botunu her tick suren taktiksel 1.8 PvP beyni.
@@ -19,6 +22,8 @@ import net.minecraft.util.math.Vec3d;
 public class BotController {
     private final ServerPlayerEntity bot;
     private final BotLevel level;
+    /** Botun hedefi: oturumu baslatan oyuncu. */
+    private final UUID ownerUuid;
 
     private int attackTick;
     private int strafeDir = 1;
@@ -27,18 +32,39 @@ public class BotController {
 
     private static final double REACH = 3.0;
 
-    public BotController(ServerPlayerEntity bot, BotLevel level) {
+    public BotController(ServerPlayerEntity bot, BotLevel level, UUID ownerUuid) {
         this.bot = bot;
         this.level = level;
+        this.ownerUuid = ownerUuid;
     }
 
     public ServerPlayerEntity getBot() { return bot; }
     public boolean isDead() { return bot == null || bot.isRemoved() || !bot.isAlive(); }
 
+    /**
+     * Hedefi ADIYLA bulur, "en yakin oyuncu" ile DEGIL.
+     *
+     * Sahte oyuncu gercek bir ServerPlayerEntity oldugu icin dunyanin oyuncu
+     * listesinde yer aliyor; getClosestPlayer(bot, ...) botun kendisini (mesafe 0)
+     * dondurup botu kendi kendine vurdurmaya calisiyordu. Sahibi UUID ile
+     * hedefleyince hem bu tuzak hem de botlarin birbirini hedeflemesi biter.
+     */
+    private ServerPlayerEntity findTarget() {
+        MinecraftServer server = bot.getServer();
+        if (server == null) return null;
+
+        ServerPlayerEntity owner = server.getPlayerManager().getPlayer(ownerUuid);
+        if (owner == null || !owner.isAlive() || owner.isCreative() || owner.isSpectator()) return null;
+        if (owner.getWorld() != bot.getWorld()) return null;
+        if (bot.squaredDistanceTo(owner) > level.followRange * level.followRange) return null;
+
+        return owner;
+    }
+
     public void tick() {
         if (isDead()) return;
-        PlayerEntity target = bot.getWorld().getClosestPlayer(bot, level.followRange);
-        if (target == null || !target.isAlive() || target.isCreative() || target.isSpectator()) {
+        PlayerEntity target = findTarget();
+        if (target == null) {
             idle();
             return;
         }

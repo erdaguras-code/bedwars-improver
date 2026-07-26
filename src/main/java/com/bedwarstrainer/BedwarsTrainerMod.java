@@ -3,6 +3,7 @@ package com.bedwarstrainer;
 import com.bedwarstrainer.command.TrainerCommands;
 import com.bedwarstrainer.event.InteractionHandler;
 import com.bedwarstrainer.lobby.LobbyBuilder;
+import com.bedwarstrainer.lobby.SafetyNet;
 import com.bedwarstrainer.pvp.PvpManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -40,6 +41,9 @@ public class BedwarsTrainerMod implements ModInitializer {
 
         // PvP bot oturum yoneticisi (Modul 2)
         PvpManager.init();
+
+        // Bosluga dusenleri lobiye alan emniyet agi
+        SafetyNet.register();
 
         // Sunucu basladiginda: void dunya ise lobiyi kur
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {

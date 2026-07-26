@@ -1,5 +1,6 @@
 package com.bedwarstrainer.lobby;
 
+import com.bedwarstrainer.module.ModuleEntry;
 import com.bedwarstrainer.module.TrainingModule;
 import com.bedwarstrainer.util.TeleportUtil;
 import net.minecraft.block.Block;
@@ -84,6 +85,10 @@ public final class LobbyBuilder {
         } else if (module == TrainingModule.PVP) {
             fillFloor(world, base, 12, Blocks.RED_SANDSTONE);          // 25x25 arena
             drawBorder(world, base, 12, Blocks.SMOOTH_RED_SANDSTONE);
+            // Void dunyada arenadan disari dusmeyi engelleyen cam duvar
+            for (int dy = 1; dy <= 4; dy++) {
+                drawBorder(world, base.up(dy), 12, Blocks.GLASS);
+            }
         } else {
             fillFloor(world, base, 4, Blocks.LIGHT_GRAY_CONCRETE);
         }
@@ -122,5 +127,7 @@ public final class LobbyBuilder {
                 module.arenaSpawn.getX() + 0.5, module.arenaSpawn.getY(), module.arenaSpawn.getZ() + 0.5,
                 module.arenaYaw, 0.0f);
         player.sendMessage(Text.translatable(module.translationKey), true); // action bar
+        // Modulun kendi baslangic mantigini calistir (bkz. ModuleEntry).
+        ModuleEntry.onEnter(module, player);
     }
 }
