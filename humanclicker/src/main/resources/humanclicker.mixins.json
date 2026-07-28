@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.humanclicker.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [],
+  "client": [
+    "MinecraftClientAccessor",
+    "MinecraftClientInvoker"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "humanclicker",
+  "version": "${version}",
+  "name": "Human Clicker",
+  "description": "Sol tus basili tutuldugunda saldiri tiklamasini tekrarlar. Nisan bir blokta oldugunda tamamen devre disi kalir, boylece blok kirma mekanigi hic etkilenmez.",
+  "authors": ["uras"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.humanclicker.HumanClickerClient"]
+  },
+  "mixins": [
+    {
+      "config": "humanclicker.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
