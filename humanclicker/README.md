@@ -88,11 +88,16 @@ sunucular).
 
 ```bash
 cd humanclicker
-gradle wrapper --gradle-version 8.10   # gradlew yoksa, tek seferlik
-./gradlew build
+gradle build
 ```
 
 Cikti: `build/libs/human-clicker-0.1.0.jar`
+
+> **Gradle 8.x sart.** Fabric Loom 1.7, Gradle 9 ile calismiyor
+> (`Problems.forNamespace` API'si kaldirildi). Gradle 9+ kuruluysa
+> `gradle wrapper --gradle-version 8.10` bile patlar, cunku wrapper gorevi de
+> build.gradle'i degerlendirip Loom'u uygulamaya calisir. CI bu yuzden
+> `gradle/actions/setup-gradle` ile surumu 8.10'a sabitliyor.
 
 Repo koku push edildiginde `.github/workflows/humanclicker.yml` bunu GitHub
 Actions'ta otomatik derler ve jar'i artifact olarak yukler.

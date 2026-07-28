@@ -27,14 +27,16 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Gradle wrapper olustur (yoksa)
-        run: |
-          if [ ! -f gradlew ]; then
-            gradle wrapper --gradle-version 8.10
-          fi
+      # Fabric Loom 1.7 Gradle 9 ile calismiyor (Problems.forNamespace kaldirildi),
+      # runner'in varsayilani ise artik Gradle 9.x. Bu yuzden surumu 8.10'a
+      # sabitliyoruz. Wrapper'a gerek yok; bu adim gradle'i kendisi kuruyor.
+      - name: Gradle 8.10 kur
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10'
 
       - name: Build
-        run: ./gradlew --no-daemon build
+        run: gradle --no-daemon build
 
       - name: Derlenen jar'i yukle
         if: success()
