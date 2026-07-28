@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
  * geciyoruz. Boylece vurus mesafesi, sweep, cooldown, paket sirasi vs.
  * neyse o kaliyor.
  *
- * ⚠️ CI-DOGRULA: Yarn 1.21.1'de imza  private boolean doAttack()  olmali.
+ * Imza: private boolean doAttack() -- Yarn 1.21.1'e karsi derlenerek dogrulandi.
  */
 @Mixin(MinecraftClient.class)
 public interface MinecraftClientInvoker {

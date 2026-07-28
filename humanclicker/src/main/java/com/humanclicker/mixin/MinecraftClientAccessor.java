@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  * temizlemek zorunda; yoksa kullanici blogu kirmaya baslarken yarim saniye
  * gecikme hisseder.
  *
- * ⚠️ CI-DOGRULA: Yarn 1.21.1'de alan adi 'attackCooldown' (int) olmali.
+ * Alan adi: 'attackCooldown' (int) -- Yarn 1.21.1'e karsi derlenerek dogrulandi.
  */
 @Mixin(MinecraftClient.class)
 public interface MinecraftClientAccessor {

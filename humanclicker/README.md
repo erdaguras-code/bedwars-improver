@@ -104,15 +104,19 @@ Actions'ta otomatik derler ve jar'i artifact olarak yukler.
 
 ---
 
-## Dogrulama notlari — CI ile kontrol edilecek
+## Dogrulama durumu
 
-Kod gercek Minecraft'a karsi derlenmeden yazildi. Asagidaki iki dosya
-Minecraft ic isimlerine dokunuyor ve `⚠️ CI-DOGRULA` etiketiyle isaretli:
+Kod ilk basta gercek Minecraft'a karsi derlenmeden yazilmisti; GitHub Actions
+derlemesi Yarn 1.21.1'e karsi **basariyla gecti**, yani asagidakiler dogrulandi:
 
-1. `mixin/MinecraftClientInvoker.java` — `doAttack()` imzasi (Yarn 1.21.1'de
-   `private boolean doAttack()` olmali).
-2. `mixin/MinecraftClientAccessor.java` — `attackCooldown` alan adi (Mojang
-   adiyla `missTime`).
+- `doAttack()` imzasi (`private boolean doAttack()`)
+- `attackCooldown` alan adi (Mojang adiyla `missTime`)
+- `MinecraftClient.crosshairTarget` erisimi
 
-Ayrica `MinecraftClient.crosshairTarget` alaninin public olmasina guveniliyor;
-degilse ona da bir accessor gerekir.
+**Henuz oyun icinde denenmedi.** Derlenmesi calistigini kanitlamaz; ozellikle
+su iki davranisin playtest ile gorulmesi gerekir:
+
+1. Blok kirma hizinin ve his olarak akiciligin autoclicker acikken hic
+   degismedigi.
+2. `clickAir=true` iken bosluga tiklayip hemen bir bloga donunce kirmanin
+   gecikmeden basladigi (`attackCooldown` temizleme mantigi).
