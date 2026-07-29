@@ -1,0 +1,821 @@
+<title>Hedef CPS — Tıklama Antrenmanı</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0E1119;
+    --panel: #161A24;
+    --panel-2: #1C212D;
+    --line: #262C3A;
+    --text: #E7EAF2;
+    --muted: #8B93A7;
+    --faint: #5C6479;
+    --accent: #FF8A3D;
+    --accent-soft: #FFB454;
+    --accent-dim: rgba(255, 138, 61, .14);
+    --miss: #FF4D5E;
+    --good: #38D492;
+    --ring-empty: rgba(140, 148, 167, .18);
+    --grid: rgba(140, 148, 167, .07);
+    --arena: #12161F;
+    --shadow: 0 24px 60px -30px rgba(0, 0, 0, .9);
+
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      color-scheme: light;
+      --bg: #E9EBF0;
+      --panel: #FFFFFF;
+      --panel-2: #F3F4F8;
+      --line: #D6DAE4;
+      --text: #141821;
+      --muted: #5B6376;
+      --faint: #8B93A7;
+      --accent: #DD5D0B;
+      --accent-soft: #F08631;
+      --accent-dim: rgba(221, 93, 11, .1);
+      --miss: #D42438;
+      --good: #0E8A5C;
+      --ring-empty: rgba(20, 24, 33, .12);
+      --grid: rgba(20, 24, 33, .05);
+      --arena: #FBFBFD;
+      --shadow: 0 24px 60px -34px rgba(20, 24, 33, .45);
+    }
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #E9EBF0;
+    --panel: #FFFFFF;
+    --panel-2: #F3F4F8;
+    --line: #D6DAE4;
+    --text: #141821;
+    --muted: #5B6376;
+    --faint: #8B93A7;
+    --accent: #DD5D0B;
+    --accent-soft: #F08631;
+    --accent-dim: rgba(221, 93, 11, .1);
+    --miss: #D42438;
+    --good: #0E8A5C;
+    --ring-empty: rgba(20, 24, 33, .12);
+    --grid: rgba(20, 24, 33, .05);
+    --arena: #FBFBFD;
+    --shadow: 0 24px 60px -34px rgba(20, 24, 33, .45);
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0E1119;
+    --panel: #161A24;
+    --panel-2: #1C212D;
+    --line: #262C3A;
+    --text: #E7EAF2;
+    --muted: #8B93A7;
+    --faint: #5C6479;
+    --accent: #FF8A3D;
+    --accent-soft: #FFB454;
+    --accent-dim: rgba(255, 138, 61, .14);
+    --miss: #FF4D5E;
+    --good: #38D492;
+    --ring-empty: rgba(140, 148, 167, .18);
+    --grid: rgba(140, 148, 167, .07);
+    --arena: #12161F;
+    --shadow: 0 24px 60px -30px rgba(0, 0, 0, .9);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app {
+    min-height: 100dvh;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 18px clamp(12px, 3vw, 28px) 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ---------- header ---------- */
+
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+
+  .brand h1 {
+    margin: 0;
+    font-size: clamp(17px, 2.4vw, 21px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+  }
+
+  .brand .sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .levels {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+  }
+
+  .levels button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color .15s ease, background-color .15s ease;
+  }
+
+  .levels button:hover { color: var(--text); }
+  .levels button[aria-pressed="true"] { background: var(--accent-dim); color: var(--accent); }
+  .levels button:focus-visible,
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .record {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .record b { color: var(--text); font-variant-numeric: tabular-nums; }
+
+  /* ---------- arena ---------- */
+
+  .arena {
+    position: relative;
+    flex: 1;
+    min-height: 340px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 44px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 44px 100%,
+      var(--arena);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    cursor: crosshair;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .arena.is-over { cursor: default; }
+
+  .timebar {
+    position: absolute;
+    inset: 0 auto auto 0;
+    height: 2px;
+    width: 100%;
+    transform-origin: 0 50%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity .2s ease;
+  }
+  .arena.is-running .timebar { opacity: 1; }
+
+  /* target */
+
+  .target {
+    position: absolute;
+    left: 0; top: 0;
+    display: none;
+    place-items: center;
+    border-radius: 50%;
+    will-change: transform;
+  }
+  .arena.has-target .target { display: grid; }
+
+  .target-life {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from -90deg, var(--accent) calc(var(--p) * 1%), var(--ring-empty) 0);
+    -webkit-mask: radial-gradient(closest-side, transparent 79%, #000 81%);
+    mask: radial-gradient(closest-side, transparent 79%, #000 81%);
+  }
+
+  .target-face {
+    position: absolute;
+    inset: 13%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 42%, var(--accent-soft) 0 22%, transparent 22.5%),
+      radial-gradient(circle at 50% 50%, var(--accent) 0 44%, var(--accent-dim) 44.5% 72%, var(--accent) 72.5% 100%);
+    box-shadow: 0 0 0 1px var(--accent-dim), 0 10px 30px -12px var(--accent);
+  }
+
+  .target-face::after {
+    content: "";
+    position: absolute;
+    inset: 43%;
+    border-radius: 50%;
+    background: var(--arena);
+  }
+
+  /* click feedback */
+
+  .fx { position: absolute; inset: 0; pointer-events: none; }
+
+  .mark {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    margin: -13px 0 0 -13px;
+    animation: mark .34s ease-out forwards;
+  }
+  .mark::before, .mark::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 12px;
+    width: 26px;
+    height: 2px;
+    margin-left: -13px;
+    border-radius: 2px;
+    background: var(--good);
+  }
+  .mark::before { transform: rotate(45deg); }
+  .mark::after { transform: rotate(-45deg); }
+  .mark.is-miss::before, .mark.is-miss::after { background: var(--miss); }
+
+  @keyframes mark {
+    from { opacity: .9; transform: scale(.7); }
+    to   { opacity: 0;  transform: scale(1.25); }
+  }
+
+  /* overlays */
+
+  .hint {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 22px;
+    width: fit-content;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 15px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--panel) 86%, transparent);
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+    pointer-events: none;
+    text-align: left;
+    border-radius: 16px;
+    max-width: min(460px, 100%);
+  }
+  .hint b { color: var(--text); font-weight: 600; }
+  .arena.is-running .hint,
+  .arena.is-over .hint { display: none; }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex: none;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+  .result {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    padding: 24px;
+    background: color-mix(in srgb, var(--arena) 92%, transparent);
+    overflow: auto;
+  }
+  .arena.is-over .result { display: flex; }
+
+  .score { text-align: center; }
+
+  .score .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .score .value {
+    font-family: var(--font-mono);
+    font-size: clamp(60px, 15vw, 108px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.04em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    margin: 6px 0 4px;
+  }
+
+  .score .caption { font-size: 13px; color: var(--muted); }
+
+  .badge {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--good) 18%, transparent);
+    color: var(--good);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .badge[hidden] { display: none; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    width: min(720px, 100%);
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .stat { background: var(--panel); padding: 12px 14px; }
+
+  .stat dt {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .stat dd {
+    margin: 5px 0 0;
+    font-family: var(--font-mono);
+    font-size: 19px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.01em;
+  }
+  .stat dd small { font-size: 12px; color: var(--muted); letter-spacing: 0; }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+  .btn {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 11px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color .15s ease, background-color .15s ease;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #12161F; font-weight: 700; }
+  .btn.primary:hover { background: var(--accent-soft); border-color: var(--accent-soft); }
+
+  /* ---------- hud ---------- */
+
+  .hud {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .cell { background: var(--panel); padding: 10px 14px; }
+
+  .cell .k {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .cell .v {
+    margin-top: 3px;
+    font-family: var(--font-mono);
+    font-size: clamp(18px, 3.4vw, 24px);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.02em;
+  }
+  .cell .v.accent { color: var(--accent); }
+
+  .foot {
+    font-size: 12px;
+    color: var(--faint);
+    text-align: center;
+    line-height: 1.6;
+  }
+  .foot kbd {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 620px) {
+    .hud { grid-template-columns: repeat(2, 1fr); }
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bar { gap: 10px; }
+    .record { order: 3; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dot, .mark { animation: none; }
+    .mark { opacity: .5; }
+  }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="brand">
+      <h1>Hedef CPS</h1>
+      <span class="sub">30 sn · tek hedef · tıklama antrenmanı</span>
+    </div>
+    <div class="levels" role="group" aria-label="Zorluk seviyesi">
+      <button type="button" data-level="kolay" aria-pressed="false">Kolay</button>
+      <button type="button" data-level="orta" aria-pressed="true">Orta</button>
+      <button type="button" data-level="zor" aria-pressed="false">Zor</button>
+      <button type="button" data-level="uzman" aria-pressed="false">Uzman</button>
+    </div>
+    <div class="record">Rekor: <b id="record">—</b> CPS</div>
+  </header>
+
+  <div id="arena" class="arena has-target">
+    <div id="timebar" class="timebar"></div>
+    <div id="target" class="target" style="--p:100">
+      <div class="target-life"></div>
+      <div class="target-face"></div>
+    </div>
+    <div id="fx" class="fx"></div>
+    <div class="hint"><span class="dot"></span><span>Hedefe <b>ilk tıklamanla</b> 30 saniye başlar — hedef ekranda kaldığı sürece tıklamaya devam et.</span></div>
+
+    <div class="result" id="result">
+      <div class="score">
+        <div class="label">Hedef CPS</div>
+        <div class="value" id="rCps">0.00</div>
+        <div class="caption" id="rCaption">hedef ekrandayken saniye başına tıklama</div>
+        <span class="badge" id="rBadge" hidden>Yeni rekor</span>
+      </div>
+
+      <dl class="stats">
+        <div class="stat"><dt>İsabet CPS</dt><dd id="rHitCps">0.00</dd></div>
+        <div class="stat"><dt>Doğruluk</dt><dd id="rAcc">0<small>%</small></dd></div>
+        <div class="stat"><dt>Tıklama</dt><dd id="rHits">0<small>/0</small></dd></div>
+        <div class="stat"><dt>En iyi hedef</dt><dd id="rBest">0.00<small> cps</small></dd></div>
+        <div class="stat"><dt>Hedef sayısı</dt><dd id="rTargets">0</dd></div>
+        <div class="stat"><dt>Kaçırılan hedef</dt><dd id="rMissed">0</dd></div>
+        <div class="stat"><dt>Hedefli süre</dt><dd id="rUptime">0.0<small> sn</small></dd></div>
+        <div class="stat"><dt>Boşta tıklama</dt><dd id="rIdle">0</dd></div>
+      </dl>
+
+      <div class="actions">
+        <button type="button" class="btn primary" id="again">Tekrar dene</button>
+        <button type="button" class="btn" id="nextLevel">Zorluğu artır</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hud">
+    <div class="cell"><div class="k">Süre</div><div class="v" id="hTime">30.0</div></div>
+    <div class="cell"><div class="k">Hedef CPS</div><div class="v accent" id="hCps">0.00</div></div>
+    <div class="cell"><div class="k">İsabet</div><div class="v" id="hHits">0</div></div>
+    <div class="cell"><div class="k">Doğruluk</div><div class="v" id="hAcc">—</div></div>
+  </div>
+
+  <p class="foot">
+    Aynı anda ekranda yalnızca <b>1 hedef</b> bulunur, her hedef rastgele bir süre kalır.
+    CPS = hedef ekrandayken yapılan tıklama ÷ hedefin ekranda kaldığı süre.
+    <kbd>R</kbd> yeniden başlat · <kbd>1</kbd>–<kbd>4</kbd> zorluk
+  </p>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const DURATION = 30000;
+
+  const LEVELS = {
+    kolay: { name: "Kolay", size: 122, life: [1400, 2200], gap: 420, drift: 0 },
+    orta:  { name: "Orta",  size: 88,  life: [900, 1500],  gap: 340, drift: 0 },
+    zor:   { name: "Zor",   size: 58,  life: [620, 1050],  gap: 260, drift: 70 },
+    uzman: { name: "Uzman", size: 40,  life: [420, 720],   gap: 190, drift: 150 }
+  };
+  const ORDER = ["kolay", "orta", "zor", "uzman"];
+  const STORE = "hedefcps.best.v2";
+
+  const el = (id) => document.getElementById(id);
+  const arena = el("arena"), target = el("target"), fx = el("fx"), timebar = el("timebar");
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let level = "orta";
+  let phase = "armed";            // armed | running | over
+  let startAt = 0, endAt = 0;
+  let spawnAt = 0;                // gap sonrası bir sonraki hedefin doğacağı an
+  let t = null;                   // aktif hedef
+
+  let stats = blank();
+
+  function blank() {
+    return {
+      clicksOnScreen: 0,   // hedef ekrandayken yapılan tüm tıklamalar
+      hits: 0,
+      idleClicks: 0,       // hedef yokken yapılan tıklamalar
+      uptime: 0,           // hedefin ekranda kaldığı toplam süre (ms)
+      targets: 0,
+      missedTargets: 0,
+      bestTarget: 0
+    };
+  }
+
+  const bests = (() => {
+    try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (_) { return {}; }
+  })();
+
+  function saveBest(value) {
+    bests[level] = value;
+    try { localStorage.setItem(STORE, JSON.stringify(bests)); } catch (_) {}
+  }
+
+  function showRecord() {
+    const b = bests[level];
+    el("record").textContent = b ? b.toFixed(2) : "—";
+  }
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  /* ---------- hedef yönetimi ---------- */
+
+  function spawn(now) {
+    const cfg = LEVELS[level];
+    const size = Math.min(cfg.size, arena.clientWidth * 0.4, arena.clientHeight * 0.4);
+    const pad = size / 2 + 12;
+    const maxX = arena.clientWidth - pad, maxY = arena.clientHeight - pad;
+
+    let x = 0, y = 0;
+    for (let i = 0; i < 12; i++) {
+      x = rand(pad, maxX);
+      y = rand(pad, maxY);
+      if (!t || Math.hypot(x - t.x, y - t.y) > size * 1.8) break;
+    }
+
+    const angle = Math.random() * Math.PI * 2;
+    t = {
+      x, y, size, r: size / 2,
+      born: now,
+      life: rand(cfg.life[0], cfg.life[1]),
+      hits: 0,
+      vx: Math.cos(angle) * cfg.drift / 1000,
+      vy: Math.sin(angle) * cfg.drift / 1000,
+      last: now
+    };
+    stats.targets++;
+
+    target.style.width = target.style.height = size + "px";
+    place();
+    target.style.setProperty("--p", 100);
+    arena.classList.add("has-target");
+  }
+
+  function place() {
+    target.style.transform = `translate(${t.x - t.r}px, ${t.y - t.r}px)`;
+  }
+
+  function despawn(now) {
+    const shown = Math.min(now, endAt) - t.born;
+    stats.uptime += Math.max(0, shown);
+    if (t.hits === 0) stats.missedTargets++;
+    else if (shown > 120) stats.bestTarget = Math.max(stats.bestTarget, t.hits / (shown / 1000));
+    t = null;
+    arena.classList.remove("has-target");
+  }
+
+  /* ---------- döngü ---------- */
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (phase !== "running") return;
+
+    if (now >= endAt) {
+      if (t) despawn(now);
+      finish();
+      return;
+    }
+
+    timebar.style.transform = `scaleX(${(endAt - now) / DURATION})`;
+
+    if (t) {
+      const dt = now - t.last;
+      t.last = now;
+      if (t.vx || t.vy) {
+        t.x += t.vx * dt;
+        t.y += t.vy * dt;
+        const pad = t.r + 6;
+        if (t.x < pad || t.x > arena.clientWidth - pad) { t.vx *= -1; t.x = Math.max(pad, Math.min(arena.clientWidth - pad, t.x)); }
+        if (t.y < pad || t.y > arena.clientHeight - pad) { t.vy *= -1; t.y = Math.max(pad, Math.min(arena.clientHeight - pad, t.y)); }
+        place();
+      }
+      const left = 1 - (now - t.born) / t.life;
+      target.style.setProperty("--p", Math.max(0, left * 100).toFixed(1));
+      if (left <= 0) {
+        despawn(now);
+        spawnAt = now + LEVELS[level].gap;
+      }
+    } else if (now >= spawnAt) {
+      spawn(now);
+    }
+
+    hud(now);
+  }
+
+  function liveUptime(now) {
+    return stats.uptime + (t ? Math.min(now, endAt) - t.born : 0);
+  }
+
+  function hud(now) {
+    const up = liveUptime(now) / 1000;
+    el("hTime").textContent = (Math.max(0, endAt - now) / 1000).toFixed(1);
+    el("hCps").textContent = up > 0.2 ? (stats.clicksOnScreen / up).toFixed(2) : "0.00";
+    el("hHits").textContent = stats.hits;
+    el("hAcc").textContent = stats.clicksOnScreen ? Math.round(stats.hits / stats.clicksOnScreen * 100) + "%" : "—";
+  }
+
+  /* ---------- tıklama ---------- */
+
+  arena.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0 || phase === "over") return;
+    e.preventDefault();
+
+    const rect = arena.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    const onTarget = !!t && Math.hypot(x - t.x, y - t.y) <= t.r;
+
+    if (phase === "armed") {
+      if (!onTarget) return;          // oyun ilk hedef tıklamasıyla başlar
+      begin(performance.now());
+    }
+
+    if (!t) { stats.idleClicks++; mark(x, y, false); return; }
+
+    stats.clicksOnScreen++;
+    if (onTarget) {
+      stats.hits++;
+      t.hits++;
+      if (!reduced) target.animate([{ transform: target.style.transform + " scale(1.07)" }, { transform: target.style.transform }], { duration: 110, easing: "ease-out" });
+    }
+    mark(x, y, !onTarget);
+  });
+
+  arena.addEventListener("contextmenu", (e) => e.preventDefault());
+
+  function mark(x, y, miss) {
+    const m = document.createElement("div");
+    m.className = "mark" + (miss ? " is-miss" : "");
+    m.style.left = x + "px";
+    m.style.top = y + "px";
+    fx.appendChild(m);
+    setTimeout(() => m.remove(), 360);
+  }
+
+  /* ---------- akış ---------- */
+
+  function begin(now) {
+    phase = "running";
+    startAt = now;
+    endAt = now + DURATION;
+    t.born = now;
+    t.last = now;
+    arena.classList.add("is-running");
+    timebar.style.transform = "scaleX(1)";
+  }
+
+  function finish() {
+    phase = "over";
+    arena.classList.remove("is-running", "has-target");
+    arena.classList.add("is-over");
+
+    const up = stats.uptime / 1000;
+    const cps = up > 0 ? stats.clicksOnScreen / up : 0;
+    const hitCps = up > 0 ? stats.hits / up : 0;
+
+    el("rCps").textContent = cps.toFixed(2);
+    el("rCaption").textContent = `${LEVELS[level].name} · hedef ekrandayken saniye başına tıklama`;
+    el("rHitCps").textContent = hitCps.toFixed(2);
+    el("rAcc").innerHTML = (stats.clicksOnScreen ? Math.round(stats.hits / stats.clicksOnScreen * 100) : 0) + "<small>%</small>";
+    el("rHits").innerHTML = stats.hits + "<small>/" + stats.clicksOnScreen + "</small>";
+    el("rBest").innerHTML = stats.bestTarget.toFixed(2) + "<small> cps</small>";
+    el("rTargets").textContent = stats.targets;
+    el("rMissed").textContent = stats.missedTargets;
+    el("rUptime").innerHTML = up.toFixed(1) + "<small> sn</small>";
+    el("rIdle").textContent = stats.idleClicks;
+
+    const record = !bests[level] || cps > bests[level];
+    el("rBadge").hidden = !record;
+    if (record && cps > 0) saveBest(cps);
+    showRecord();
+
+    el("nextLevel").hidden = ORDER.indexOf(level) === ORDER.length - 1;
+    hud(endAt);
+  }
+
+  function reset() {
+    phase = "armed";
+    t = null;
+    stats = blank();
+    arena.classList.remove("is-over", "is-running");
+    fx.replaceChildren();
+    endAt = startAt = performance.now() + DURATION;   // HUD 30.0 gösterir
+    el("hTime").textContent = (DURATION / 1000).toFixed(1);
+    el("hCps").textContent = "0.00";
+    el("hHits").textContent = "0";
+    el("hAcc").textContent = "—";
+    spawn(performance.now());
+    showRecord();
+  }
+
+  function setLevel(next) {
+    if (!LEVELS[next]) return;
+    level = next;
+    for (const b of document.querySelectorAll(".levels button")) {
+      b.setAttribute("aria-pressed", String(b.dataset.level === level));
+    }
+    reset();
+  }
+
+  document.querySelector(".levels").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (b) setLevel(b.dataset.level);
+  });
+
+  el("again").addEventListener("click", reset);
+  el("nextLevel").addEventListener("click", () => {
+    setLevel(ORDER[Math.min(ORDER.indexOf(level) + 1, ORDER.length - 1)]);
+  });
+
+  addEventListener("keydown", (e) => {
+    if (e.key === "r" || e.key === "R") reset();
+    const i = "1234".indexOf(e.key);
+    if (i >= 0) setLevel(ORDER[i]);
+  });
+
+  addEventListener("resize", () => {
+    if (phase === "armed") reset();
+    else if (t) {
+      t.x = Math.min(t.x, arena.clientWidth - t.r - 6);
+      t.y = Math.min(t.y, arena.clientHeight - t.r - 6);
+      place();
+    }
+  });
+
+  requestAnimationFrame(frame);
+  reset();
+})();
+</script>
